@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Growing App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="Life.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <div class="header-content">
+                <h1>Life Growing App</h1>
+                <p id="currentDate">Loading date...</p>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Daily Progress</span>
+                    <span id="progressText">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="grid-layout">
+            
+            <section class="card task-section">
+                <div class="card-header">
+                    <h2><i class="ri-list-check"></i> Daily Tasks</h2>
+                    <span class="badge" id="taskCount">0/10</span>
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" id="taskInput" placeholder="Add a new habit..." maxlength="40">
+                    <button id="addTaskBtn"><i class="ri-add-line"></i></button>
+                </div>
+
+                <ul id="taskList" class="task-list">
+                    </ul>
+            </section>
+
+            <div class="right-column">
+                <section class="card chart-section">
+                    <div class="card-header">
+                        <h2><i class="ri-bar-chart-box-line"></i> Weekly Growth</h2>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </section>
+
+                <section class="card memory-section">
+                    <div class="card-header">
+                        <h2><i class="ri-book-read-line"></i> Today's Memory</h2>
+                    </div>
+                    <textarea id="memoryInput" placeholder="What did you achieve today?"></textarea>
+                    <button id="saveMemoryBtn" class="secondary-btn">Save Memory</button>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="Life.JS"></script>
+</body>
+</html>
