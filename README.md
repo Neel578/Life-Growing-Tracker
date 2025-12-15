@@ -4,11 +4,6 @@ A simple and powerful daily life growth & habit-tracking web app that helps you 
 
 ---
 
-## 📸 App Preview
-![Life Growing Tracker Preview](assets/preview.png)
-
----
-
 ## 🚀 Features
 - Add up to 10 daily tasks
 - Daily task completion tracking
