@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Growing App</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <section id="welcomeScreen" class="welcome-container">
+        <div class="welcome-header">
+            <h1>Your Journey</h1>
+            <p id="welcomeDate">Loading...</p>
+        </div>
+
+        <div class="glass-card calendar-wrapper">
+            <div class="calendar-header">
+                <span id="monthName">Month</span>
+                <div class="calendar-legend">
+                    <span class="dot green"></span> Done
+                    <span class="dot gray"></span> Future
+                </div>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+
+        <div class="summary-card">
+            <div class="stat-box glass-card">
+                <h3 id="daysGone">0</h3>
+                <span>Days Gone</span>
+            </div>
+            <div class="stat-box glass-card">
+                <h3 id="daysLeft">0</h3>
+                <span>Days Left</span>
+            </div>
+            <div class="stat-box glass-card highlight">
+                <h3 id="totalCompleted">0</h3>
+                <span>Tasks Done</span>
+            </div>
+        </div>
+
+        <button id="startDayBtn" class="glow-btn">
+            Start My Day <i class="ri-arrow-right-line"></i>
+        </button>
+    </section>
+
+    <div id="mainApp" class="app-container" style="display: none;">
+        <header>
+            <button class="back-btn" onclick="goBack()">
+                <i class="ri-arrow-left-line"></i> Back
+            </button>
+            <div class="header-content">
+                <h1>Daily Focus</h1>
+                <p id="currentDate">Today</p>
+            </div>
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>Daily Progress</span>
+                    <span id="progressText">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progressBar"></div>
+                </div>
+            </div>
+        </header>
+
+        <main class="grid-layout">
+            <section class="glass-card task-section">
+                <div class="card-header">
+                    <h2><i class="ri-list-check"></i> Today's Tasks</h2>
+                    <span class="badge" id="taskCount">0/10</span>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="taskInput" placeholder="Add a new habit..." maxlength="40">
+                    <button id="addTaskBtn"><i class="ri-add-line"></i></button>
+                </div>
+                <ul id="taskList" class="task-list"></ul>
+            </section>
+
+            <div class="right-column">
+                <section class="glass-card chart-section">
+                    <div class="card-header">
+                        <h2><i class="ri-bar-chart-box-line"></i> Weekly Growth</h2>
+                    </div>
+                    <div class="chart-wrapper"><canvas id="growthChart"></canvas></div>
+                </section>
+                <section class="glass-card memory-section">
+                    <div class="card-header">
+                        <h2><i class="ri-book-read-line"></i> Today's Memory</h2>
+                    </div>
+                    <textarea id="memoryInput" placeholder="What did you achieve today?"></textarea>
+                    <button id="saveMemoryBtn" class="secondary-btn">Save Memory</button>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
