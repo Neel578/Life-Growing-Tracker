@@ -6,7 +6,6 @@
     <title>Life Growing App</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
@@ -20,6 +19,13 @@
         <div class="welcome-header">
             <h1>Your Journey</h1>
             <p id="welcomeDate">Loading...</p>
+        </div>
+
+        <div class="glass-card" style="height: 180px; margin-bottom: 20px; padding: 15px; position: relative;">
+            <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px; font-weight: 600;">Weekly Flow</div>
+            <div style="height: 120px; width: 100%;">
+                <canvas id="chartWelcome"></canvas>
+            </div>
         </div>
 
         <div class="glass-card calendar-wrapper">
@@ -48,10 +54,67 @@
             </div>
         </div>
 
-        <button id="startDayBtn" class="glow-btn">
-            Start My Day <i class="ri-arrow-right-line"></i>
-        </button>
+        <div class="action-buttons">
+            <button id="startDayBtn" class="glow-btn">
+                Start My Day <i class="ri-arrow-right-line"></i>
+            </button>
+            
+            <button id="openMoneyBtn" class="glow-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);">
+                <i class="ri-money-dollar-circle-line"></i> Financial Growth
+            </button>
+            
+            <button id="openMemoriesBtn" class="secondary-glow-btn">
+                <i class="ri-gallery-line"></i> My Memories
+            </button>
+        </div>
     </section>
+
+    <div id="memoryBrowser" class="app-container" style="display: none;">
+        <header>
+            <button class="back-btn" onclick="closeMemories()">
+                <i class="ri-arrow-left-line"></i> Back to Home
+            </button>
+            <div class="header-content">
+                <h1>Time Capsule</h1>
+                <p id="memoryBreadcrumb">Select Year</p>
+            </div>
+        </header>
+
+        <div id="memoryListContainer" class="memory-grid"></div>
+
+        <button id="addMemoryFab" class="fab-btn" onclick="openMemoryEditor(new Date())">
+            <i class="ri-add-line"></i>
+        </button>
+    </div>
+
+    <div id="memoryEditor" class="modal-overlay" style="display: none;">
+        <div class="glass-card modal-content">
+            <div class="modal-header">
+                <h2 id="editorDateTitle">Edit Memory</h2>
+                <button class="close-icon" onclick="closeEditor()"><i class="ri-close-line"></i></button>
+            </div>
+            
+            <div class="insta-carousel-wrapper">
+                <div class="insta-carousel" id="carouselTrack"></div>
+                <div class="carousel-dots" id="carouselDots"></div>
+                
+                <div class="upload-trigger" onclick="document.getElementById('mediaInput').click()">
+                    <i class="ri-add-circle-fill"></i>
+                </div>
+            </div>
+
+            <input type="file" id="mediaInput" accept="image/*" multiple hidden onchange="handleMediaPreview(this)">
+
+            <p class="limit-text">Max 7 Photos</p>
+
+            <textarea id="editorText" placeholder="Write about this moment..."></textarea>
+            
+            <div class="modal-actions">
+                <button onclick="deleteCurrentMemory()" class="delete-btn-text">Delete</button>
+                <button onclick="saveCurrentMemory()" class="glow-btn small">Save Memory</button>
+            </div>
+        </div>
+    </div>
 
     <div id="mainApp" class="app-container" style="display: none;">
         <header>
@@ -93,15 +156,81 @@
                     </div>
                     <div class="chart-wrapper"><canvas id="growthChart"></canvas></div>
                 </section>
-                <section class="glass-card memory-section">
-                    <div class="card-header">
-                        <h2><i class="ri-book-read-line"></i> Today's Memory</h2>
-                    </div>
-                    <textarea id="memoryInput" placeholder="What did you achieve today?"></textarea>
-                    <button id="saveMemoryBtn" class="secondary-btn">Save Memory</button>
-                </section>
             </div>
         </main>
+    </div>
+
+    <div id="moneyApp" class="app-container" style="display: none;">
+        <header>
+            <button class="back-btn" onclick="closeMoneyApp()">
+                <i class="ri-arrow-left-line"></i> Back to Home
+            </button>
+            <div class="header-content">
+                <h1>Financial Freedom</h1>
+                <p>45 / 15 / 25 / 10 Rule</p>
+            </div>
+        </header>
+
+        <div id="goalSetupSection" class="glass-card" style="text-align: center; display:none;">
+            <h2>🎯 Set Your Target</h2>
+            <p style="color:var(--text-muted); margin-bottom:15px;">What is your total income goal?</p>
+            <input type="number" id="goalInput" placeholder="e.g. 100000" style="text-align:center; font-size:1.2rem; margin-bottom:15px; width:100%; padding:15px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:white;">
+            <button onclick="setMoneyGoal()" class="glow-btn">Set Goal</button>
+        </div>
+
+        <div id="moneyDashboard" style="display:none;">
+            
+            <div class="glass-card" style="margin-bottom: 20px; text-align: center;">
+                <span style="color:var(--text-muted); font-size: 0.9rem;">Total Goal Progress</span>
+                <h1 style="font-size: 2.2rem; margin: 10px 0; color: #f59e0b;">
+                    <span id="currentTotalDisplay">0</span> / <span id="goalTotalDisplay">100,000</span>
+                </h1>
+                <div class="progress-bar-bg" style="height: 12px; background:rgba(255,255,255,0.1);">
+                    <div id="moneyProgressBar" class="progress-bar-fill" style="width: 0%; background: linear-gradient(90deg, #f59e0b, #fbbf24);"></div>
+                </div>
+                
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <input type="number" id="addMoneyInput" placeholder="Enter Amount (e.g. 500)" style="flex:1; padding:12px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:white;">
+                    <button onclick="addMoney()" class="glow-btn small" style="background: #f59e0b; color: #000; min-width:80px;"><i class="ri-add-line"></i> Add</button>
+                </div>
+            </div>
+
+            <div class="money-grid">
+                
+                <div class="money-card needs">
+                    <div class="icon-box"><i class="ri-home-heart-line"></i></div>
+                    <h3>Needs (45%)</h3>
+                    <p class="money-value" id="valNeeds">0</p>
+                    <span class="desc">Food, Travel, Bills</span>
+                </div>
+
+                <div class="money-card savings">
+                    <div class="icon-box"><i class="ri-safe-2-line"></i></div>
+                    <h3>Emergency (15%)</h3>
+                    <p class="money-value" id="valSavings">0</p>
+                    <span class="desc">For sudden problems</span>
+                </div>
+
+                <div class="money-card invest">
+                    <div class="icon-box"><i class="ri-line-chart-line"></i></div>
+                    <h3>Invest (25%)</h3>
+                    <p class="money-value" id="valInvest">0</p>
+                    <span class="desc">Future Wealth</span>
+                </div>
+
+                <div class="money-card fun">
+                    <div class="icon-box"><i class="ri-gamepad-line"></i></div>
+                    <h3>Fun (10%)</h3>
+                    <p class="money-value" id="valFun">0</p>
+                    <span class="desc">Spend freely</span>
+                </div>
+
+            </div>
+            
+            <button onclick="resetMoneyGoal()" class="secondary-glow-btn" style="margin-top: 20px; font-size: 0.8rem; border-color:#ef4444; color:#ef4444;">
+                <i class="ri-refresh-line"></i> Reset Goal
+            </button>
+        </div>
     </div>
 
     <script src="script.js"></script>
