@@ -16,13 +16,20 @@
 <body>
 
     <section id="welcomeScreen" class="welcome-container">
+        <button onclick="toggleTheme()" class="theme-btn" id="themeBtn">
+            <i class="ri-moon-line"></i>
+        </button>
+
         <div class="welcome-header">
             <h1>Your Journey</h1>
             <p id="welcomeDate">Loading...</p>
         </div>
 
-        <div class="glass-card" style="height: 180px; margin-bottom: 20px; padding: 15px; position: relative;">
-            <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px; font-weight: 600;">Weekly Flow</div>
+        <div class="glass-card" onclick="openAnalytics()" style="height: 180px; margin-bottom: 20px; padding: 15px; position: relative; cursor: pointer;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Analytics (Click to View)</div>
+                <i class="ri-bar-chart-grouped-line" style="color: var(--accent);"></i>
+            </div>
             <div style="height: 120px; width: 100%;">
                 <canvas id="chartWelcome"></canvas>
             </div>
@@ -50,7 +57,7 @@
             </div>
             <div class="stat-box glass-card highlight">
                 <h3 id="totalCompleted">0</h3>
-                <span>Tasks Done</span>
+                <span>This Month</span>
             </div>
         </div>
 
@@ -68,6 +75,42 @@
             </button>
         </div>
     </section>
+
+    <div id="analyticsApp" class="app-container" style="display: none;">
+        <header>
+            <button class="back-btn" onclick="goBack()">
+                <i class="ri-arrow-left-line"></i> Back
+            </button>
+            <div class="header-content">
+                <h1>Analytics</h1>
+                <p>Performance Overview</p>
+            </div>
+        </header>
+
+        <div class="analytics-tabs">
+            <button class="tab-btn active" onclick="switchAnalyticsTab('7d')">7 Days</button>
+            <button class="tab-btn" onclick="switchAnalyticsTab('28d')">28 Days</button>
+            <button class="tab-btn" onclick="switchAnalyticsTab('90d')">90 Days</button>
+            <button class="tab-btn" onclick="switchAnalyticsTab('365d')">365 Days</button>
+            <button class="tab-btn" onclick="switchAnalyticsTab('life')">Lifetime</button>
+        </div>
+        
+        <div class="analytics-tabs secondary">
+            <button class="tab-btn small" onclick="switchAnalyticsTab('monthly')">By Month</button>
+            <button class="tab-btn small" onclick="switchAnalyticsTab('yearly')">By Year</button>
+        </div>
+
+        <div class="glass-card" style="margin-bottom: 25px; padding: 20px;">
+            <div style="margin-bottom: 15px;">
+                <h2 style="font-size: 0.9rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Tasks Completed</h2>
+                <h1 id="analyticsTotalDisplay" style="font-size: 2.5rem; margin-top:5px;">0</h1>
+                <p id="analyticsSubtext" style="color: var(--text-muted); font-size: 0.8rem;">in selected period</p>
+            </div>
+            <div style="height: 300px; width: 100%;">
+                <canvas id="analyticsChart"></canvas>
+            </div>
+        </div>
+    </div>
 
     <div id="memoryBrowser" class="app-container" style="display: none;">
         <header>
@@ -104,9 +147,7 @@
             </div>
 
             <input type="file" id="mediaInput" accept="image/*" multiple hidden onchange="handleMediaPreview(this)">
-
             <p class="limit-text">Max 7 Photos</p>
-
             <textarea id="editorText" placeholder="Write about this moment..."></textarea>
             
             <div class="modal-actions">
@@ -174,12 +215,11 @@
         <div id="goalSetupSection" class="glass-card" style="text-align: center; display:none;">
             <h2>🎯 Set Your Target</h2>
             <p style="color:var(--text-muted); margin-bottom:15px;">What is your total income goal?</p>
-            <input type="number" id="goalInput" placeholder="e.g. 100000" style="text-align:center; font-size:1.2rem; margin-bottom:15px; width:100%; padding:15px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:white;">
+            <input type="number" id="goalInput" placeholder="e.g. 100000" style="text-align:center; font-size:1.2rem; margin-bottom:15px; width:100%; padding:15px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:var(--text-main);">
             <button onclick="setMoneyGoal()" class="glow-btn">Set Goal</button>
         </div>
 
         <div id="moneyDashboard" style="display:none;">
-            
             <div class="glass-card" style="margin-bottom: 20px; text-align: center;">
                 <span style="color:var(--text-muted); font-size: 0.9rem;">Total Goal Progress</span>
                 <h1 style="font-size: 2.2rem; margin: 10px 0; color: #f59e0b;">
@@ -190,41 +230,36 @@
                 </div>
                 
                 <div style="margin-top: 20px; display: flex; gap: 10px;">
-                    <input type="number" id="addMoneyInput" placeholder="Enter Amount (e.g. 500)" style="flex:1; padding:12px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:white;">
+                    <input type="number" id="addMoneyInput" placeholder="Enter Amount" style="flex:1; padding:12px; border-radius:12px; border:none; background:rgba(255,255,255,0.1); color:var(--text-main);">
                     <button onclick="addMoney()" class="glow-btn small" style="background: #f59e0b; color: #000; min-width:80px;"><i class="ri-add-line"></i> Add</button>
                 </div>
             </div>
 
             <div class="money-grid">
-                
                 <div class="money-card needs">
                     <div class="icon-box"><i class="ri-home-heart-line"></i></div>
                     <h3>Needs (45%)</h3>
                     <p class="money-value" id="valNeeds">0</p>
                     <span class="desc">Food, Travel, Bills</span>
                 </div>
-
                 <div class="money-card savings">
                     <div class="icon-box"><i class="ri-safe-2-line"></i></div>
                     <h3>Emergency (15%)</h3>
                     <p class="money-value" id="valSavings">0</p>
                     <span class="desc">For sudden problems</span>
                 </div>
-
                 <div class="money-card invest">
                     <div class="icon-box"><i class="ri-line-chart-line"></i></div>
                     <h3>Invest (25%)</h3>
                     <p class="money-value" id="valInvest">0</p>
                     <span class="desc">Future Wealth</span>
                 </div>
-
                 <div class="money-card fun">
                     <div class="icon-box"><i class="ri-gamepad-line"></i></div>
                     <h3>Fun (10%)</h3>
                     <p class="money-value" id="valFun">0</p>
                     <span class="desc">Spend freely</span>
                 </div>
-
             </div>
             
             <button onclick="resetMoneyGoal()" class="secondary-glow-btn" style="margin-top: 20px; font-size: 0.8rem; border-color:#ef4444; color:#ef4444;">
