@@ -69,6 +69,14 @@
             <button id="openMoneyBtn" class="glow-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);">
                 <i class="ri-money-dollar-circle-line"></i> Financial Growth
             </button>
+
+            <button id="openWorkoutBtn" class="physical-growth-button">
+                <div class="title"><i class="ri-fire-line"></i> Physical Growth</div>
+                <div class="percentage" id="homeWorkoutPercent">0%</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="homeWorkoutBarFill" style="width: 0%;"></div>
+                </div>
+            </button>
             
             <button id="openMemoriesBtn" class="secondary-glow-btn">
                 <i class="ri-gallery-line"></i> My Memories
@@ -265,6 +273,82 @@
             <button onclick="resetMoneyGoal()" class="secondary-glow-btn" style="margin-top: 20px; font-size: 0.8rem; border-color:#ef4444; color:#ef4444;">
                 <i class="ri-refresh-line"></i> Reset Goal
             </button>
+        </div>
+    </div>
+
+    <div id="workoutApp" class="app-container" style="display: none;">
+        <header>
+            <button class="back-btn" onclick="goBack()">
+                <i class="ri-arrow-left-line"></i> Back
+            </button>
+            <div class="header-content">
+                <h1>Physical Growth</h1>
+                <p>Monthly Goals</p>
+            </div>
+        </header>
+
+        <div id="workoutDashboard" style="display:none; padding: 20px;">
+            
+            <div class="glass-card" style="text-align: center; margin-bottom: 20px; padding: 30px;">
+                <p style="color:var(--text-muted); font-size: 0.9rem;">MONTHLY COMPLETION</p>
+                <h1 id="totalProgressPercent" style="font-size: 4rem; color: #10b981; margin: 10px 0;">0%</h1>
+                <div class="progress-bar-bg" style="height: 15px; background:rgba(255,255,255,0.1);">
+                    <div id="totalProgressBar" class="progress-bar-fill" style="width: 0%; background: #10b981;"></div>
+                </div>
+                <p id="totalStatsText" style="margin-top: 10px; font-size: 0.9rem;">0 / 0 Reps Completed</p>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button id="toggleEditBtn" onclick="toggleEditMode()" class="secondary-glow-btn" style="padding:10px; font-size:0.9rem;">
+                    <i class="ri-edit-line"></i> Edit Plan
+                </button>
+                <button onclick="openPlanManager()" class="secondary-glow-btn" style="padding:10px; font-size:0.9rem; border-color:#ef4444; color:#ef4444;">
+                    <i class="ri-delete-bin-line"></i> Reset All
+                </button>
+            </div>
+
+            <div id="activePlanContainer"></div>
+
+        </div>
+
+        <div id="workoutManager" style="display:block; padding: 20px;">
+            <div class="glass-card" style="text-align:center; padding: 40px 20px;">
+                <i class="ri-run-line" style="font-size: 3rem; color: var(--accent);"></i>
+                <h2>Manage Workout</h2>
+                <p style="color:var(--text-muted); margin-bottom: 30px;">Create your monthly goal plan.</p>
+                <button onclick="startPlanCreation()" class="glow-btn">
+                    <i class="ri-add-line"></i> Add New Workout Plan
+                </button>
+            </div>
+        </div>
+
+        <div id="planCreatorModal" class="modal-overlay" style="display: none;">
+            <div class="glass-card modal-content" style="max-height: 80vh; overflow-y: auto;">
+                <div class="modal-header">
+                    <h2>Create Plan</h2>
+                    <button class="close-icon" onclick="closePlanCreator()"><i class="ri-close-line"></i></button>
+                </div>
+
+                <div id="creatorStep1">
+                    <p style="margin-bottom: 20px;">How do you want to organize your exercises?</p>
+                    <button onclick="choosePlanType('section')" class="glass-card" style="width:100%; text-align:left; margin-bottom:10px; cursor:pointer;">
+                        <h3 style="color:var(--accent);">Option 1: Body Part Sections</h3>
+                        <p style="font-size:0.8rem; color:var(--text-muted);">Group by Chest, Legs, Abs, etc.</p>
+                    </button>
+                    <button onclick="choosePlanType('list')" class="glass-card" style="width:100%; text-align:left; cursor:pointer;">
+                        <h3 style="color:var(--accent);">Option 2: Simple List</h3>
+                        <p style="font-size:0.8rem; color:var(--text-muted);">Just a list of exercises mixed together.</p>
+                    </button>
+                </div>
+
+                <div id="creatorStep2" style="display:none;">
+                    <div id="planBuilderContainer"></div>
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button onclick="addBuilderItem()" class="secondary-glow-btn" style="flex:1;">+ Add More</button>
+                        <button onclick="saveNewPlan()" class="glow-btn" style="flex:1;">Save Plan</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
