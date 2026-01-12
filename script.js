@@ -9,11 +9,13 @@ const memoryBrowser = document.getElementById('memoryBrowser');
 const memoryEditor = document.getElementById('memoryEditor');
 const moneyApp = document.getElementById('moneyApp');
 const analyticsApp = document.getElementById('analyticsApp');
+const workoutApp = document.getElementById('workoutApp'); 
 
 // Navigation Buttons
 const startDayBtn = document.getElementById('startDayBtn');
 const openMemoriesBtn = document.getElementById('openMemoriesBtn');
 const openMoneyBtn = document.getElementById('openMoneyBtn');
+const openWorkoutBtn = document.getElementById('openWorkoutBtn'); 
 const themeBtn = document.getElementById('themeBtn');
 
 // Welcome Screen Elements
@@ -23,6 +25,7 @@ const monthNameEl = document.getElementById('monthName');
 const daysGoneEl = document.getElementById('daysGone');
 const daysLeftEl = document.getElementById('daysLeft');
 const totalCompletedEl = document.getElementById('totalCompleted');
+const homeWorkoutPercent = document.getElementById('homeWorkoutPercent'); // NEW
 
 // Habit App Elements
 const taskInput = document.getElementById('taskInput');
@@ -58,6 +61,16 @@ const carouselDots = document.getElementById('carouselDots');
 const analyticsChartEl = document.getElementById('analyticsChart');
 const analyticsTotalDisplay = document.getElementById('analyticsTotalDisplay');
 
+// Workout Elements
+const workoutDashboard = document.getElementById('workoutDashboard');
+const workoutManager = document.getElementById('workoutManager');
+const planCreatorModal = document.getElementById('planCreatorModal');
+const activePlanContainer = document.getElementById('activePlanContainer');
+const planBuilderContainer = document.getElementById('planBuilderContainer');
+const creatorStep1 = document.getElementById('creatorStep1');
+const creatorStep2 = document.getElementById('creatorStep2');
+const toggleEditBtn = document.getElementById('toggleEditBtn'); // NEW
+
 // ==========================================
 // 2. THEME MANAGEMENT
 // ==========================================
@@ -69,10 +82,10 @@ const moonIcon = '<i class="ri-moon-line"></i>';
 function applyTheme() {
     if (currentTheme === 'light') {
         document.body.classList.add('light-mode');
-        themeBtn.innerHTML = moonIcon; // Switch to moon icon when in light mode
+        themeBtn.innerHTML = moonIcon; 
     } else {
         document.body.classList.remove('light-mode');
-        themeBtn.innerHTML = sunIcon; // Switch to sun icon when in dark mode
+        themeBtn.innerHTML = sunIcon; 
     }
 }
 
@@ -84,7 +97,6 @@ function toggleTheme() {
     }
     localStorage.setItem('theme', currentTheme);
     applyTheme();
-    // Re-render charts to update text colors
     updateCharts();
     if (analyticsApp.style.display === 'block') switchAnalyticsTab('7d');
 }
@@ -113,14 +125,21 @@ let growthChartWelcome;
 const MAX_TASKS = 10;
 const MAX_MEDIA_ITEMS = 7;
 
+// Workout State
+let workoutPlan = JSON.parse(localStorage.getItem('workoutPlan')) || null;
+let tempPlanType = ''; 
+let tempBuilderData = []; 
+let isEditingPlan = false; // NEW state for editing
+
 // ==========================================
-// 4. INITIALIZATION (UPDATED FOR BACK BUTTON)
+// 4. INITIALIZATION
 // ==========================================
 
 function init() {
     applyTheme();
     renderWelcomeScreen();
     updateCharts(); 
+    updateHomeWorkoutProgress(); // Update button on load
     
     startDayBtn.addEventListener('click', () => {
         switchScreen(mainApp);
@@ -137,46 +156,45 @@ function init() {
         initMoneyApp();
     });
 
-    // --- NEW: LISTEN FOR PHONE BACK BUTTON ---
+    openWorkoutBtn.addEventListener('click', () => {
+        switchScreen(workoutApp);
+        renderWorkoutUI();
+    });
+
     window.onpopstate = function(event) {
-        // When the user presses the phone's back button, this runs.
-        // We force the app to go back to the Welcome Screen.
-        
-        // This manually resets the view to Home
         welcomeScreen.style.display = 'block';
         mainApp.style.display = 'none';
         memoryBrowser.style.display = 'none';
         moneyApp.style.display = 'none';
         analyticsApp.style.display = 'none';
+        workoutApp.style.display = 'none'; 
         
         renderWelcomeScreen();
         updateCharts();
+        updateHomeWorkoutProgress();
     };
 }
 
 function switchScreen(screenToShow) {
-    // Hide everything
     welcomeScreen.style.display = 'none';
     mainApp.style.display = 'none';
     memoryBrowser.style.display = 'none';
     moneyApp.style.display = 'none';
     analyticsApp.style.display = 'none';
+    workoutApp.style.display = 'none'; 
     
-    // Show the target screen
     screenToShow.style.display = 'block';
 
-    // --- NEW: PUSH HISTORY STATE ---
-    // If we are NOT going to the home screen, tell the phone we moved "forward"
     if (screenToShow !== welcomeScreen) {
         history.pushState({ page: screenToShow.id }, "", "#" + screenToShow.id);
     }
 }
 
 function goBack() {
-    // This is for your internal "Back" buttons
     switchScreen(welcomeScreen);
     renderWelcomeScreen();
     updateCharts(); 
+    updateHomeWorkoutProgress();
 }
 
 function closeMoneyApp() { goBack(); }
@@ -418,7 +436,6 @@ function createSmoothChart(ctx, data, labels) {
     gradient.addColorStop(0, 'rgba(6, 182, 212, 0.5)');
     gradient.addColorStop(1, 'rgba(6, 182, 212, 0.0)');
 
-    // Text Color based on Theme
     const textColor = currentTheme === 'light' ? '#64748b' : '#94a3b8';
 
     return new Chart(ctx, {
@@ -454,7 +471,7 @@ function createSmoothChart(ctx, data, labels) {
 }
 
 // ==========================================
-// 9. ANALYTICS (YouTube Style)
+// 9. ANALYTICS
 // ==========================================
 
 function switchAnalyticsTab(range) {
@@ -559,7 +576,7 @@ function renderAnalyticsChart(labels, data) {
     });
 }
 
-// Memory browser functions ... (Same as before)
+// Memory browser functions
 function openMemoryBrowser() { memoryBreadcrumb.innerText = "Select Year"; renderYears(); }
 function renderYears() { memoryListContainer.innerHTML = ''; const currentYear = new Date().getFullYear().toString(); const years = Object.keys(memories).sort().reverse(); if (!years.includes(currentYear)) years.unshift(currentYear); years.forEach(year => { const card = createFolderCard(year, 'ri-calendar-fill', null, () => renderMonths(year)); memoryListContainer.appendChild(card); }); }
 function renderMonths(year) { memoryListContainer.innerHTML = ''; const allMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]; const backCard = createFolderCard("Back", "ri-arrow-go-back-line", null, () => renderYears()); memoryListContainer.appendChild(backCard); allMonths.forEach(month => { if ((memories[year] && memories[year][month]) || year == new Date().getFullYear()) { const card = createFolderCard(month, 'ri-folder-3-fill', null, () => renderDays(year, month)); memoryListContainer.appendChild(card); } }); }
@@ -573,6 +590,371 @@ function handleMediaPreview(input) { const files = input.files; if (!files || fi
 function resizeImage(base64Str, maxWidth, maxHeight, callback) { const img = new Image(); img.src = base64Str; img.onload = () => { const canvas = document.createElement('canvas'); let width = img.width; let height = img.height; if (width > height) { if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; } } else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } } canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height); callback(canvas.toDataURL('image/jpeg', 0.7)); }; }
 function saveCurrentMemory() { const year = currentEditingDate.getFullYear().toString(); const month = currentEditingDate.toLocaleString('default', { month: 'long' }); const day = currentEditingDate.getDate().toString(); const text = editorText.value; if (!text && currentMediaList.length === 0) return; if (!memories[year]) memories[year] = {}; if (!memories[year][month]) memories[year][month] = {}; memories[year][month][day] = { text: text, media: currentMediaList }; try { localStorage.setItem('memories_v2', JSON.stringify(memories)); alert("Saved!"); closeEditor(); if(memoryBrowser.style.display === 'block') renderDays(year, month); } catch (e) { alert("Storage Full!"); } }
 function deleteCurrentMemory() { const year = currentEditingDate.getFullYear().toString(); const month = currentEditingDate.toLocaleString('default', { month: 'long' }); const day = currentEditingDate.getDate().toString(); if (confirm("Delete memory?")) { if (memories[year] && memories[year][month]) { delete memories[year][month][day]; localStorage.setItem('memories_v2', JSON.stringify(memories)); closeEditor(); renderDays(year, month); } } }
+
+
+// ==========================================
+// 10. WORKOUT MANAGER LOGIC (FULL UPDATE)
+// ==========================================
+
+// --- HOME SCREEN PROGRESS ---
+function updateHomeWorkoutProgress() {
+    if (!workoutPlan) {
+        homeWorkoutPercent.innerText = "0%";
+        return;
+    }
+    let totalGoal = 0;
+    let totalCurrent = 0;
+
+    if (workoutPlan.type === 'section') {
+        workoutPlan.data.forEach(sec => {
+            sec.exercises.forEach(ex => {
+                totalGoal += ex.goal;
+                totalCurrent += ex.current;
+            });
+        });
+    } else {
+        workoutPlan.data.forEach(ex => {
+            totalGoal += ex.goal;
+            totalCurrent += ex.current;
+        });
+    }
+
+    const percent = totalGoal === 0 ? 0 : Math.round((totalCurrent / totalGoal) * 100);
+    homeWorkoutPercent.innerText = `${percent}%`;
+}
+
+// --- INIT & ROUTING ---
+function renderWorkoutUI() {
+    if (workoutPlan) {
+        workoutDashboard.style.display = 'block';
+        workoutManager.style.display = 'none';
+        
+        // Reset edit mode when re-opening
+        isEditingPlan = false;
+        toggleEditBtn.innerHTML = `<i class="ri-edit-line"></i> Edit Plan`;
+        toggleEditBtn.className = "secondary-glow-btn";
+        
+        calculateAndRenderProgress();
+    } else {
+        workoutDashboard.style.display = 'none';
+        workoutManager.style.display = 'block';
+    }
+}
+
+function openPlanManager() {
+    if(confirm("This will DELETE your current plan and progress. Create new one?")) {
+        workoutPlan = null;
+        localStorage.removeItem('workoutPlan');
+        renderWorkoutUI();
+        updateHomeWorkoutProgress();
+    }
+}
+
+// --- EDIT MODE TOGGLE ---
+function toggleEditMode() {
+    isEditingPlan = !isEditingPlan;
+    if(isEditingPlan) {
+        toggleEditBtn.innerHTML = `<i class="ri-save-line"></i> Finish Editing`;
+        toggleEditBtn.className = "glow-btn small"; // Highlight button
+    } else {
+        toggleEditBtn.innerHTML = `<i class="ri-edit-line"></i> Edit Plan`;
+        toggleEditBtn.className = "secondary-glow-btn";
+    }
+    calculateAndRenderProgress(); // Re-render with new state
+}
+
+// --- PLAN CREATION WIZARD ---
+function startPlanCreation() {
+    planCreatorModal.style.display = 'flex';
+    creatorStep1.style.display = 'block';
+    creatorStep2.style.display = 'none';
+}
+
+function closePlanCreator() {
+    planCreatorModal.style.display = 'none';
+}
+
+function choosePlanType(type) {
+    tempPlanType = type;
+    tempBuilderData = []; // Reset
+    creatorStep1.style.display = 'none';
+    creatorStep2.style.display = 'block';
+    renderBuilderInputs();
+}
+
+function renderBuilderInputs() {
+    planBuilderContainer.innerHTML = '';
+    if (tempBuilderData.length === 0) {
+        if (tempPlanType === 'section') {
+            tempBuilderData.push({ sectionName: '', exercises: [{ name: '', goal: '' }] });
+        } else {
+            tempBuilderData.push({ name: '', goal: '' });
+        }
+    }
+    if (tempPlanType === 'section') renderSectionBuilder();
+    else renderListBuilder();
+}
+
+// --- BUILDER RENDERERS ---
+function renderSectionBuilder() {
+    tempBuilderData.forEach((section, sIndex) => {
+        const div = document.createElement('div');
+        div.className = 'glass-card';
+        div.style.marginBottom = '15px';
+        div.style.padding = '15px';
+        div.innerHTML = `
+            <input type="text" placeholder="Section Name (e.g. Chest)" value="${section.sectionName}" 
+                onchange="updateSectionName(${sIndex}, this.value)"
+                style="width:100%; background:transparent; border:none; border-bottom:1px solid #555; color:white; font-size:1.1rem; margin-bottom:10px; font-weight:bold;">
+            <div id="ex-container-${sIndex}"></div>
+            <button onclick="addExerciseToSection(${sIndex})" style="font-size:0.8rem; color:#10b981; background:none; border:none; margin-top:10px;">+ Add Exercise</button>
+        `;
+        planBuilderContainer.appendChild(div);
+        const exContainer = div.querySelector(`#ex-container-${sIndex}`);
+        section.exercises.forEach((ex, exIndex) => {
+            const exRow = document.createElement('div');
+            exRow.style.display = 'flex'; exRow.style.gap = '10px'; exRow.style.marginBottom = '5px';
+            exRow.innerHTML = `
+                <input type="text" placeholder="Exercise" value="${ex.name}" onchange="updateSectionEx(${sIndex}, ${exIndex}, 'name', this.value)" style="flex:2; padding:8px; border-radius:5px; border:none; background:rgba(255,255,255,0.1); color:white;">
+                <input type="number" placeholder="Goal" value="${ex.goal}" onchange="updateSectionEx(${sIndex}, ${exIndex}, 'goal', this.value)" style="flex:1; padding:8px; border-radius:5px; border:none; background:rgba(255,255,255,0.1); color:white;">
+            `;
+            exContainer.appendChild(exRow);
+        });
+    });
+}
+
+function renderListBuilder() {
+    tempBuilderData.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.style.display = 'flex'; div.style.gap = '10px'; div.style.marginBottom = '10px';
+        div.innerHTML = `
+            <input type="text" placeholder="Exercise Name" value="${item.name}" onchange="updateListItem(${index}, 'name', this.value)" style="flex:2; padding:10px; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:white;">
+            <input type="number" placeholder="Monthly Goal" value="${item.goal}" onchange="updateListItem(${index}, 'goal', this.value)" style="flex:1; padding:10px; border-radius:8px; border:none; background:rgba(255,255,255,0.1); color:white;">
+        `;
+        planBuilderContainer.appendChild(div);
+    });
+}
+
+// --- BUILDER HELPERS ---
+function addBuilderItem() {
+    if (tempPlanType === 'section') {
+        tempBuilderData.push({ sectionName: '', exercises: [{ name: '', goal: '' }] });
+        renderBuilderInputs();
+    } else {
+        tempBuilderData.push({ name: '', goal: '' });
+        renderBuilderInputs();
+    }
+}
+function addExerciseToSection(sIndex) {
+    tempBuilderData[sIndex].exercises.push({ name: '', goal: '' });
+    renderBuilderInputs();
+}
+window.updateSectionName = (idx, val) => { tempBuilderData[idx].sectionName = val; };
+window.updateSectionEx = (sIdx, exIdx, field, val) => { tempBuilderData[sIdx].exercises[exIdx][field] = val; };
+window.updateListItem = (idx, field, val) => { tempBuilderData[idx][field] = val; };
+
+function saveNewPlan() {
+    let finalData;
+    if (tempPlanType === 'section') {
+        finalData = tempBuilderData.filter(s => s.sectionName.trim() !== '').map(s => ({
+            sectionName: s.sectionName,
+            exercises: s.exercises.filter(e => e.name && e.goal).map(e => ({ name: e.name, goal: parseInt(e.goal), current: 0 }))
+        }));
+    } else {
+        finalData = tempBuilderData.filter(i => i.name && i.goal).map(i => ({ name: i.name, goal: parseInt(i.goal), current: 0 }));
+    }
+    if (finalData.length === 0) { alert("Please add at least one valid exercise/section."); return; }
+    workoutPlan = { type: tempPlanType, data: finalData };
+    localStorage.setItem('workoutPlan', JSON.stringify(workoutPlan));
+    closePlanCreator();
+    renderWorkoutUI();
+    updateHomeWorkoutProgress();
+}
+
+// 4. MAIN DASHBOARD LOGIC (Handles View & Edit Modes)
+function calculateAndRenderProgress() {
+    activePlanContainer.innerHTML = '';
+    let totalGoal = 0;
+    let totalCurrent = 0;
+
+    if (workoutPlan.type === 'section') {
+        workoutPlan.data.forEach((section, sIndex) => {
+            const sectionCard = document.createElement('div');
+            sectionCard.className = 'glass-card';
+            sectionCard.style.marginBottom = '20px';
+            sectionCard.style.padding = '15px';
+            
+            // Header: View vs Edit
+            let headerHTML = '';
+            if(isEditingPlan) {
+                headerHTML = `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                        <input type="text" value="${section.sectionName}" onchange="saveEditedSectionName(${sIndex}, this.value)" style="width:70%; background:rgba(0,0,0,0.2); border:none; color:white; padding:5px;">
+                        <button onclick="deleteSection(${sIndex})" style="color:#ef4444; background:none; border:none;"><i class="ri-delete-bin-line"></i></button>
+                    </div>`;
+            } else {
+                headerHTML = `<h3 style="color:var(--accent); margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:5px;">${section.sectionName}</h3>`;
+            }
+            
+            let exercisesHTML = '';
+            section.exercises.forEach((ex, exIndex) => {
+                totalGoal += parseInt(ex.goal);
+                totalCurrent += parseInt(ex.current);
+                exercisesHTML += createExerciseRowHTML(ex, sIndex, exIndex);
+            });
+
+            // Edit Mode: Add Exercise Button
+            if(isEditingPlan) {
+                exercisesHTML += `<button onclick="addItemInEditMode(${sIndex})" style="width:100%; margin-top:10px; padding:8px; border:1px dashed #555; background:none; color:#10b981;">+ Add Exercise</button>`;
+            }
+            
+            sectionCard.innerHTML = headerHTML + exercisesHTML;
+            activePlanContainer.appendChild(sectionCard);
+        });
+        
+        // Edit Mode: Add Section Button
+        if(isEditingPlan) {
+            const addSecBtn = document.createElement('button');
+            addSecBtn.innerHTML = "+ Add New Body Part Section";
+            addSecBtn.className = "secondary-glow-btn";
+            addSecBtn.style.marginTop = "10px";
+            addSecBtn.onclick = () => addSectionInEditMode();
+            activePlanContainer.appendChild(addSecBtn);
+        }
+
+    } else {
+        // List Type
+        const listCard = document.createElement('div');
+        listCard.className = 'glass-card';
+        listCard.style.padding = '15px';
+        
+        let html = '';
+        workoutPlan.data.forEach((ex, index) => {
+            totalGoal += parseInt(ex.goal);
+            totalCurrent += parseInt(ex.current);
+            html += createExerciseRowHTML(ex, null, index);
+        });
+
+        if(isEditingPlan) {
+            html += `<button onclick="addItemInEditMode(null)" style="width:100%; margin-top:10px; padding:8px; border:1px dashed #555; background:none; color:#10b981;">+ Add Exercise</button>`;
+        }
+        
+        listCard.innerHTML = html;
+        activePlanContainer.appendChild(listCard);
+    }
+
+    const percent = totalGoal === 0 ? 0 : Math.round((totalCurrent / totalGoal) * 100);
+    document.getElementById('totalProgressPercent').innerText = `${percent}%`;
+    document.getElementById('totalProgressBar').style.width = `${percent}%`;
+    document.getElementById('totalStatsText').innerText = `${totalCurrent} / ${totalGoal} Reps Completed`;
+    
+    updateHomeWorkoutProgress();
+}
+
+function createExerciseRowHTML(ex, sIndex, exIndex) {
+    const idParams = sIndex !== null ? `${sIndex}, ${exIndex}` : `null, ${exIndex}`;
+    
+    // EDIT MODE ROW
+    if (isEditingPlan) {
+        return `
+        <div style="display:flex; gap:5px; margin-bottom:10px; align-items:center;">
+            <input type="text" value="${ex.name}" onchange="saveEditedItem(${idParams}, 'name', this.value)" style="flex:2; padding:8px; background:rgba(255,255,255,0.05); border:none; color:white; border-radius:5px;">
+            <input type="number" value="${ex.goal}" onchange="saveEditedItem(${idParams}, 'goal', this.value)" style="flex:1; padding:8px; background:rgba(255,255,255,0.05); border:none; color:white; border-radius:5px;">
+            <button onclick="deleteItem(${idParams})" style="background:none; border:none; color:#ef4444; padding:5px;"><i class="ri-close-circle-fill" style="font-size:1.2rem;"></i></button>
+        </div>
+        `;
+    }
+
+    // VIEW/LOG MODE ROW (With Minus Button)
+    return `
+    <div style="margin-bottom: 15px;">
+        <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:5px;">
+            <span>${ex.name}</span>
+            <span style="color:var(--text-muted);">${ex.current} / ${ex.goal}</span>
+        </div>
+        <div class="progress-bar-bg" style="height:8px; margin-bottom:8px;">
+            <div class="progress-bar-fill" style="width:${Math.min(100, (ex.current/ex.goal)*100)}%; background:#10b981;"></div>
+        </div>
+        <div style="display:flex; gap:5px;">
+            <input type="number" id="add-input-${sIndex}-${exIndex}" placeholder="Count" style="flex:1; padding:5px; border-radius:5px; border:none; background:rgba(255,255,255,0.1); color:white; font-size:0.8rem;">
+            
+            <button onclick="logReps(${idParams}, -1)" style="background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid #ef4444; border-radius:5px; padding:5px 12px; font-weight:bold;">-</button>
+            
+            <button onclick="logReps(${idParams}, 1)" style="background:var(--accent); color:black; border:none; border-radius:5px; padding:5px 15px; font-weight:bold;">+</button>
+        </div>
+    </div>
+    `;
+}
+
+// 5. ACTIONS: LOGGING & EDITING
+window.logReps = (sIndex, exIndex, multiplier) => {
+    const inputId = `add-input-${sIndex}-${exIndex}`;
+    const inputEl = document.getElementById(inputId);
+    let amount = parseInt(inputEl.value);
+
+    if (!amount || amount <= 0) amount = 0; // If empty, don't do anything unless button specific logic (optional)
+    if (amount === 0 && inputEl.value === "") return; // Safety
+
+    const change = amount * multiplier; // Handles add or subtract
+
+    if (sIndex !== null) {
+        let newCurrent = workoutPlan.data[sIndex].exercises[exIndex].current + change;
+        if (newCurrent < 0) newCurrent = 0;
+        workoutPlan.data[sIndex].exercises[exIndex].current = newCurrent;
+    } else {
+        let newCurrent = workoutPlan.data[exIndex].current + change;
+        if (newCurrent < 0) newCurrent = 0;
+        workoutPlan.data[exIndex].current = newCurrent;
+    }
+
+    localStorage.setItem('workoutPlan', JSON.stringify(workoutPlan));
+    inputEl.value = ''; // Clear input
+    calculateAndRenderProgress();
+};
+
+// Edit Functions
+window.saveEditedItem = (sIndex, exIndex, field, val) => {
+    if(sIndex !== null) workoutPlan.data[sIndex].exercises[exIndex][field] = (field === 'goal' ? parseInt(val) : val);
+    else workoutPlan.data[exIndex][field] = (field === 'goal' ? parseInt(val) : val);
+    localStorage.setItem('workoutPlan', JSON.stringify(workoutPlan));
+};
+
+window.saveEditedSectionName = (sIndex, val) => {
+    workoutPlan.data[sIndex].sectionName = val;
+    localStorage.setItem('workoutPlan', JSON.stringify(workoutPlan));
+};
+
+window.deleteItem = (sIndex, exIndex) => {
+    if(!confirm("Remove this exercise?")) return;
+    if(sIndex !== null) workoutPlan.data[sIndex].exercises.splice(exIndex, 1);
+    else workoutPlan.data.splice(exIndex, 1);
+    localStorage.setItem('workoutPlan', JSON.stringify(workoutPlan));
+    calculateAndRenderProgress();
+};
+
+window.deleteSection = (sIndex) => {
+    if(!confirm("Delete this entire section?")) return;
+    workoutPlan.data.splice(sIndex, 1);
+    localStorage.setItem('workoutPlan', JSON.stringify(workoutPlan));
+    calculateAndRenderProgress();
+};
+
+window.addItemInEditMode = (sIndex) => {
+    const newEx = { name: "New Exercise", goal: 100, current: 0 };
+    if(sIndex !== null) workoutPlan.data[sIndex].exercises.push(newEx);
+    else workoutPlan.data.push(newEx);
+    localStorage.setItem('workoutPlan', JSON.stringify(workoutPlan));
+    calculateAndRenderProgress();
+};
+
+window.addSectionInEditMode = () => {
+    workoutPlan.data.push({
+        sectionName: "New Section",
+        exercises: [{ name: "New Exercise", goal: 100, current: 0 }]
+    });
+    localStorage.setItem('workoutPlan', JSON.stringify(workoutPlan));
+    calculateAndRenderProgress();
+};
 
 // Start App
 init();
