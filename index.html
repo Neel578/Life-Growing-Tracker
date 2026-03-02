@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <section id="welcomeScreen" class="welcome-container">
         <button onclick="toggleTheme()" class="theme-btn" id="themeBtn">
             <i class="ri-moon-line"></i>
@@ -25,7 +24,7 @@
             <p id="welcomeDate">Loading...</p>
         </div>
 
-        <div class="glass-card" onclick="openAnalytics()" style="height: 180px; margin-bottom: 20px; padding: 15px; position: relative; cursor: pointer;">
+        <div class="glass-card" onclick="switchApp('analyticsApp')" style="height: 180px; margin-bottom: 20px; padding: 15px; position: relative; cursor: pointer;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
                 <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Analytics (Click to View)</div>
                 <i class="ri-bar-chart-grouped-line" style="color: var(--accent);"></i>
@@ -62,15 +61,19 @@
         </div>
 
         <div class="action-buttons">
-            <button id="startDayBtn" class="glow-btn">
+            <button id="startDayBtn" class="glow-btn" onclick="switchApp('mainApp')">
                 Start My Day <i class="ri-arrow-right-line"></i>
             </button>
             
-            <button id="openMoneyBtn" class="glow-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);">
+            <button id="openMoneyBtn" class="glow-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);" onclick="switchApp('moneyApp')">
                 <i class="ri-money-dollar-circle-line"></i> Financial Growth
             </button>
 
-            <button id="openWorkoutBtn" class="physical-growth-button">
+            <button id="openLearningBtn" class="glow-btn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);" onclick="switchApp('learningApp')">
+                <i class="ri-book-read-line"></i> Mental Growth & Projects
+            </button>
+
+            <button id="openWorkoutBtn" class="physical-growth-button" onclick="switchApp('workoutApp')">
                 <div class="title"><i class="ri-fire-line"></i> Physical Growth</div>
                 <div class="percentage" id="homeWorkoutPercent">0%</div>
                 <div class="progress-bar-container">
@@ -78,7 +81,7 @@
                 </div>
             </button>
             
-            <button id="openMemoriesBtn" class="secondary-glow-btn">
+            <button id="openMemoriesBtn" class="secondary-glow-btn" onclick="switchApp('memoryBrowser')">
                 <i class="ri-gallery-line"></i> My Memories
             </button>
         </div>
@@ -86,7 +89,7 @@
 
     <div id="analyticsApp" class="app-container" style="display: none;">
         <header>
-            <button class="back-btn" onclick="goBack()">
+            <button class="back-btn" onclick="goHome()">
                 <i class="ri-arrow-left-line"></i> Back
             </button>
             <div class="header-content">
@@ -122,7 +125,7 @@
 
     <div id="memoryBrowser" class="app-container" style="display: none;">
         <header>
-            <button class="back-btn" onclick="closeMemories()">
+            <button class="back-btn" onclick="goHome()">
                 <i class="ri-arrow-left-line"></i> Back to Home
             </button>
             <div class="header-content">
@@ -167,7 +170,7 @@
 
     <div id="mainApp" class="app-container" style="display: none;">
         <header>
-            <button class="back-btn" onclick="goBack()">
+            <button class="back-btn" onclick="goHome()">
                 <i class="ri-arrow-left-line"></i> Back
             </button>
             <div class="header-content">
@@ -211,7 +214,7 @@
 
     <div id="moneyApp" class="app-container" style="display: none;">
         <header>
-            <button class="back-btn" onclick="closeMoneyApp()">
+            <button class="back-btn" onclick="goHome()">
                 <i class="ri-arrow-left-line"></i> Back to Home
             </button>
             <div class="header-content">
@@ -278,7 +281,7 @@
 
     <div id="workoutApp" class="app-container" style="display: none;">
         <header>
-            <button class="back-btn" onclick="goBack()">
+            <button class="back-btn" onclick="goHome()">
                 <i class="ri-arrow-left-line"></i> Back
             </button>
             <div class="header-content">
@@ -288,7 +291,6 @@
         </header>
 
         <div id="workoutDashboard" style="display:none; padding: 20px;">
-            
             <div class="glass-card" style="text-align: center; margin-bottom: 20px; padding: 30px;">
                 <p style="color:var(--text-muted); font-size: 0.9rem;">MONTHLY COMPLETION</p>
                 <h1 id="totalProgressPercent" style="font-size: 4rem; color: #10b981; margin: 10px 0;">0%</h1>
@@ -308,7 +310,6 @@
             </div>
 
             <div id="activePlanContainer"></div>
-
         </div>
 
         <div id="workoutManager" style="display:block; padding: 20px;">
@@ -348,6 +349,81 @@
                         <button onclick="saveNewPlan()" class="glow-btn" style="flex:1;">Save Plan</button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="learningApp" class="app-container" style="display: none;">
+        
+        <div id="dashboard-view">
+            <header>
+                <button class="back-btn" onclick="goHome()">
+                    <i class="ri-arrow-left-line"></i> Back to Home
+                </button>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%; margin-top: 15px;">
+                    <div class="header-content" style="margin: 0;">
+                        <h1>Mental Growth</h1>
+                        <p>My Learning & Projects</p>
+                    </div>
+                    <div style="position: relative;">
+                        <button class="glow-btn small" onclick="toggleAddMenu()">+ Add Item</button>
+                        <div id="add-menu" class="glass-card hidden" style="position: absolute; right: 0; top: 50px; padding: 15px; width: 200px; z-index: 100; display: flex; flex-direction: column; gap: 10px;">
+                            <button class="secondary-glow-btn small" onclick="createNewCourse('Study Planning')">Study Planning</button>
+                            <button class="secondary-glow-btn small" onclick="createNewCourse('Project Planning')">Project Planning</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div id="courses-grid" class="grid" style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
+            </div>
+        </div>
+
+        <div id="course-view" class="hidden">
+            <header>
+                <button class="back-btn" onclick="goBackToLearningDash()">
+                    <i class="ri-arrow-left-line"></i> Back to Dashboard
+                </button>
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 15px;">
+                    <h1 id="current-course-title" style="margin:0;">Course Name</h1>
+                    <button class="glow-btn small" onclick="addChapter()">+ Add Chapter</button>
+                </div>
+                
+                <div class="progress-container" style="max-width: 100%; margin-top: 20px;">
+                    <div class="progress-label">
+                        <span>Course Progress</span>
+                        <span id="course-progress-text">0% Completed</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div id="course-progress-fill" class="progress-bar-fill"></div>
+                    </div>
+                </div>
+            </header>
+
+            <div id="chapters-container"></div>
+        </div>
+
+        <div id="board-view" class="hidden">
+            <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <button class="back-btn" onclick="goBackToLearningDash()" style="margin-bottom: 5px;">
+                        <i class="ri-arrow-left-line"></i> Back to Dashboard
+                    </button>
+                    <h1 id="board-title" style="margin-bottom: 0;">Project Board</h1>
+                </div>
+                
+                <div class="board-toolbar glass-card" style="padding: 10px; display: flex; gap: 10px; z-index: 10;">
+                    <button class="tab-btn active" id="tool-cursor" onclick="setTool('cursor')">👆 Move</button>
+                    <button class="tab-btn" id="tool-note" onclick="setTool('note')">📝 Note</button>
+                    <button class="tab-btn" id="tool-image" onclick="setTool('image')">🖼️ Image</button>
+                    <button class="tab-btn" id="tool-connect" onclick="setTool('connect')">🔗 Connect</button>
+                    <button class="tab-btn" id="tool-delete" onclick="setTool('delete')" style="color: #ef4444;">🗑️ Delete</button>
+                </div>
+            </header>
+
+            <div id="canvas-container">
+                <svg id="connection-layer"></svg>
+                <div id="nodes-layer"></div>
             </div>
         </div>
     </div>
